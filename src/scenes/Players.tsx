@@ -1,6 +1,8 @@
 import Magician, { Look } from './Magician'
 import { Html, RoundedBox } from '@react-three/drei'
 import { leaderboard } from '../data/leaderboard'
+import type { Phase } from '../App'
+import type { CSSProperties } from 'react'
 
 const LOOKS: Partial<Look>[] = [
   { coat: '#49352e', scarf: '#87634f', hair: '#2a1e18', skin: '#c4b1a2', trim: '#d4af37', aura: '#ffd36a', sigil: '♠', glow: false, seed: 0 },
@@ -12,15 +14,22 @@ const LOOKS: Partial<Look>[] = [
 const SEAT_R = 4.05
 
 /** Five players seated at the points of a pentagram, all facing the centre of the table. */
-export default function Players() {
+export default function Players({ phase }: { phase: Phase }) {
+  // Labels are shown in the intro/main world; they fade out as soon as a suit is entered
+  // (entering), stay hidden in every card panel and while exiting, and fade back in on 'world'.
+  const visible = phase === 'intro' || phase === 'world'
+  const labelStyle = {
+    '--player-label-opacity': visible ? 1 : 0,
+    '--player-label-duration': visible ? '500ms' : '400ms', // fade in ~500ms, out ~400ms
+  } as CSSProperties
   return <>{LOOKS.map((look, k) => {
     const phi = -Math.PI / 2 + (k * 2 * Math.PI) / 5, x = Math.cos(phi) * SEAT_R, z = Math.sin(phi) * SEAT_R
     const tableFacing = Math.atan2(-Math.cos(phi), -Math.sin(phi))
     const player = leaderboard[k]
     return (
       <group key={k} position={[x, 0, z]} rotation={[0, tableFacing * 0.62, 0]}>
-        <Html position={[0, 2.78, 0]} center pointerEvents="none" zIndexRange={[19, 0]}>
-          <div className="player-leader-tag"><span>{k + 1}</span><strong>{player.name}</strong><b>{player.total > 0 ? '+' : ''}{player.total}</b></div>
+        <Html position={[0, 2.78, 0]} center pointerEvents="none" zIndexRange={[5, 0]}>
+          <div className="player-leader-tag" style={labelStyle}><span>{k + 1}</span><strong>{player.name}</strong><b>{player.total > 0 ? '+' : ''}{player.total}</b></div>
         </Html>
         <RoundedBox args={[0.58, 0.46, 0.1]} radius={0.055} smoothness={4} position={[0, 0.78, -0.55]}><meshStandardMaterial color="#260b10" roughness={0.62} metalness={0.12} /></RoundedBox>
         <RoundedBox args={[0.62, 0.025, 0.11]} radius={0.012} smoothness={3} position={[0, 1.015, -0.55]}><meshStandardMaterial color="#b99a53" metalness={0.72} roughness={0.36} /></RoundedBox>

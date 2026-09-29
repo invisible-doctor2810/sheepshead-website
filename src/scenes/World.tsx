@@ -154,7 +154,7 @@ export default function World(p: WorldProps) {
       <Backdrop low={lowEnd} />
       <group ref={tableGroup}>
         <Table />
-        <Players />
+        <Players phase={p.phase} />
         <Suits {...p} tableRotation={tableRotation} />
       </group>
       <TableRotation group={tableGroup} target={tableRotation} />
