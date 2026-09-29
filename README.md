@@ -18,7 +18,7 @@ The script locates the sheet tab by its exact header row, generates the timestam
 Reading the sheet through Apps Script has a start-up delay. For much faster loads, the script also maintains a small **Standings** tab (names and totals only, no emails) that Google can serve directly:
 
 1. Paste the latest `apps-script/Code.gs`, save, and redeploy as a **New version**.
-2. In the Apps Script editor, pick `setupStandingsTab` in the function dropdown and click **Run** (approve the prompt). A "Standings" tab appears in the spreadsheet.
+2. In the Apps Script editor, pick `setupStandingsTab` in the function dropdown and click **Run** (approve the prompt). A "Standings" tab appears in the spreadsheet, and an automatic trigger is created so hand edits to the sheet (clearing a score, deleting a row) update the site too.
 3. In the spreadsheet choose **File > Share > Publish to web**. Under Link choose the **Standings** tab (not "Entire document") and format **Comma-separated values (.csv)**, then Publish. Only that tab becomes public; the email column stays private.
 4. Copy the link and set `VITE_STANDINGS_CSV_URL` in `.env.local`, then rebuild.
 

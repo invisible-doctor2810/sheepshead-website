@@ -229,10 +229,27 @@ function writeStandingsTab(spreadsheet, sheet) {
   return players;
 }
 
-// Run this once from the Apps Script editor (Run > setupStandingsTab) to create the tab before publishing it.
+// Runs automatically whenever someone edits the spreadsheet by hand (clearing a score, deleting a row, renaming a player),
+// so the Standings tab and the site's data follow manual changes too.
+function onSheetChanged() {
+  const cache = CacheService.getScriptCache();
+  if (cache.get('standings_writing')) return; // ignore the change our own rewrite of the Standings tab just made
+  cache.put('standings_writing', '1', 10);
+  try {
+    cache.remove('standings');
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    writeStandingsTab(spreadsheet, findScoreSheet(spreadsheet));
+  } finally {
+    cache.remove('standings_writing');
+  }
+}
+
+// Run this once from the Apps Script editor (Run > setupStandingsTab): creates the Standings tab and the auto-update trigger.
 function setupStandingsTab() {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   writeStandingsTab(spreadsheet, findScoreSheet(spreadsheet));
+  const exists = ScriptApp.getProjectTriggers().some(function (t) { return t.getHandlerFunction() === 'onSheetChanged'; });
+  if (!exists) ScriptApp.newTrigger('onSheetChanged').forSpreadsheet(spreadsheet).onChange().create();
 }
 
 function standingsResponse(callback) {
