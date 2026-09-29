@@ -48,6 +48,7 @@ function doPost(e) {
 }
 
 function doGet(e) {
+  if (e && e.parameter && e.parameter.action === 'standings') return standingsResponse(String(e.parameter.callback || ''));
   const requestId = String(e && e.parameter && e.parameter.requestId || '');
   const callback = String(e && e.parameter && e.parameter.callback || '');
   if (!requestId && !callback) {
@@ -154,6 +155,8 @@ function upsertDailyScore(sheet, spreadsheet, submission) {
   const scoreCell = sheet.getRange(rowNumber, scoreColumn);
   scoreCell.setNumberFormat('0.##');
   scoreCell.setValue(numericScore(submission.score));
+  CacheService.getScriptCache().remove('standings'); // next read reflects this score
+  try { writeStandingsTab(spreadsheet, sheet); } catch (ignore) {} // keep the published Standings tab current
 }
 
 function dateParts(value, timeZone) {
@@ -193,4 +196,56 @@ function numericScore(value) {
   if (value === '' || value == null) return '';
   const number = typeof value === 'number' ? value : Number(String(value).trim());
   return Number.isFinite(number) ? number : '';
+}
+
+var STANDINGS_TAB = 'Standings';
+
+// Name + all-time total (sum of every daily score) for each player.
+function computeStandings(sheet) {
+  const lastRow = sheet.getLastRow();
+  const lastColumn = sheet.getLastColumn();
+  const players = [];
+  if (lastRow > 1) {
+    const rows = sheet.getRange(2, 1, lastRow - 1, lastColumn).getValues();
+    rows.forEach(function (row) {
+      const name = String(row[0] == null ? '' : row[0]).replace(/^'/, '').trim();
+      if (!name) return;
+      let total = 0;
+      for (let c = 2; c < row.length; c++) total += Number(numericScore(row[c])) || 0;
+      players.push({ name: name, total: Math.round(total * 100) / 100 });
+    });
+  }
+  return players;
+}
+
+// Keeps a small public-safe "Standings" tab (no emails) up to date. Publish only this tab to the web (see README)
+// and the website can read it straight from Google's servers, which is much faster than a script call.
+function writeStandingsTab(spreadsheet, sheet) {
+  const players = computeStandings(sheet).sort(function (a, b) { return b.total - a.total || a.name.localeCompare(b.name); });
+  const tab = spreadsheet.getSheetByName(STANDINGS_TAB) || spreadsheet.insertSheet(STANDINGS_TAB);
+  tab.clear();
+  const values = [['Name', 'Total']].concat(players.map(function (p) { return [safeCellText(p.name), p.total]; }));
+  tab.getRange(1, 1, values.length, 2).setValues(values);
+  return players;
+}
+
+// Run this once from the Apps Script editor (Run > setupStandingsTab) to create the tab before publishing it.
+function setupStandingsTab() {
+  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+  writeStandingsTab(spreadsheet, findScoreSheet(spreadsheet));
+}
+
+function standingsResponse(callback) {
+  try {
+    const cache = CacheService.getScriptCache();
+    const cached = cache.get('standings');
+    if (cached) return jsonp(callback, { ok: true, players: JSON.parse(cached) });
+    const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = findScoreSheet(spreadsheet);
+    const players = computeStandings(sheet);
+    try { cache.put('standings', JSON.stringify(players), 60); } catch (ignore) {}
+    return jsonp(callback, { ok: true, players: players });
+  } catch (error) {
+    return jsonp(callback, { ok: false, error: error && error.message ? error.message : 'Unable to read standings.' });
+  }
 }

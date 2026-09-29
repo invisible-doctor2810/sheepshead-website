@@ -108,3 +108,29 @@ canvas{touch-action:none;cursor:grab}canvas:active{cursor:grabbing}
 .panel::after{content:'';position:fixed;inset:-12%;z-index:0;pointer-events:none;opacity:.5;mix-blend-mode:screen;filter:blur(26px);background-image:radial-gradient(ellipse 130% 30% at 4% 78%,color-mix(in srgb,var(--accent) 34%,transparent),transparent 78%),radial-gradient(ellipse 120% 25% at 96% 18%,color-mix(in srgb,var(--accent) 21%,transparent),transparent 80%),linear-gradient(158deg,transparent 34%,color-mix(in srgb,var(--accent) 9%,transparent) 48%,transparent 62%);background-size:135% 150%;animation:liquidFlow 26s ease-in-out infinite alternate}
 .panel>*{position:relative;z-index:1}
 @keyframes liquidFlow{to{transform:translate3d(2.5%, -1.5%, 0) rotate(1.5deg);background-position:100% 0}}
+
+/* UW Madison subtitle, history card, standalone ledger */
+.brand{display:inline-grid;text-align:left;line-height:1.15}.brand small{font-size:.6em;letter-spacing:.3em;color:var(--silver);text-shadow:none}
+.intro h1{display:grid;gap:.5rem;justify-items:center}.intro h1 small{font-size:.32em;letter-spacing:.5em;margin-right:-.5em}
+.ledger-link{position:absolute;z-index:21;top:4.4rem;left:1.5rem;padding:.4rem .9rem;border:1px solid #d4af3766;background:#090708c9;color:var(--gold,#d4af37);font-family:var(--serif);letter-spacing:.1em;font-size:.85rem;backdrop-filter:blur(5px);transition:box-shadow .3s,transform .2s}
+.ledger-link:hover{box-shadow:0 0 18px #d4af3766}.ledger-link:active{transform:scale(.97)}
+.history-link{max-width:420px;margin-top:1.5rem}.history-link em{color:var(--silver)}
+.panel--ledger{background-image:radial-gradient(ellipse at 16% 90%,#6a521888,transparent 42%),repeating-linear-gradient(115deg,#ffffff08 0 1px,transparent 1px 5px),linear-gradient(145deg,#1d1608f8,#0c0904f8 72%);animation:softEnter .48s cubic-bezier(.22,.72,.28,1) both}
+.panel--ledger.panel--leaving{animation:clubReturn .58s cubic-bezier(.4,0,.7,.35) both}
+.ledger select{background:#000;border:0;border-bottom:1px solid var(--accent);padding:.5rem}
+@media(max-width:600px){.ledger-link{top:3.6rem;left:.65rem;font-size:.75rem}}
+
+.history-notion{display:inline-block;margin-top:.5rem;color:var(--accent)}
+
+/* Score history: fills the screen width, never scrolls sideways (vertical scroll only) */
+.panel--clubs{padding-left:clamp(.5rem,2vw,2rem);padding-right:clamp(.5rem,2vw,2rem)}
+.book.history{max-width:100%;width:100%;padding:clamp(.5rem,1.4vw,1.5rem);box-sizing:border-box}
+.history nav{margin-top:.8rem}
+.score-table-wrap{overflow-x:hidden;overflow-y:auto;max-height:calc(100dvh - 18rem);min-height:40vh;margin:.5rem 0}
+.score-table{table-layout:fixed;width:100%;border-collapse:collapse;font-size:clamp(7px,1.15vw,15px);font-variant-numeric:tabular-nums}
+.score-table col.col-name{width:19%}.score-table col.col-stat{width:5.5%}
+.score-table th,.score-table td{padding:.35em .25em;border-bottom:1px solid #ffffff1f;text-align:right;white-space:nowrap;overflow:hidden}
+.score-table th:first-child,.score-table td:first-child{text-align:left;white-space:normal;overflow-wrap:anywhere;line-height:1.15;padding-left:.5em}
+.score-table th{color:var(--accent);font-family:var(--serif);position:sticky;top:0;background:#0d1a14;z-index:1}
+.score-table tbody tr:nth-child(even){background:#ffffff07}
+@media(max-width:600px){.score-table-wrap{max-height:calc(100dvh - 15rem)}}

@@ -2,7 +2,9 @@ import Magician, { Look } from './Magician'
 import { Html, RoundedBox } from '@react-three/drei'
 import { leaderboard } from '../data/leaderboard'
 import type { Phase } from '../App'
+import { useEffect, useSyncExternalStore } from 'react'
 import type { CSSProperties } from 'react'
+import { getStandings, refreshStandings, subscribeStandings, topPlayers } from '../services/scoreService'
 
 const LOOKS: Partial<Look>[] = [
   { coat: '#49352e', scarf: '#87634f', hair: '#2a1e18', skin: '#c4b1a2', trim: '#d4af37', aura: '#ffd36a', sigil: '♠', glow: false, seed: 0 },
@@ -17,6 +19,10 @@ const SEAT_R = 4.05
 export default function Players({ phase }: { phase: Phase }) {
   // Labels are shown in the intro/main world; they fade out as soon as a suit is entered
   // (entering), stay hidden in every card panel and while exiting, and fade back in on 'world'.
+  const standings = useSyncExternalStore(subscribeStandings, getStandings)
+  useEffect(() => { refreshStandings(); const id = setInterval(() => refreshStandings(true), 120000); return () => clearInterval(id) }, [])
+  // Top 5 all-time by summed score, straight from the sheet; static list only until the sheet answers.
+  const top = standings && standings.length ? topPlayers(standings) : leaderboard
   const visible = phase === 'intro' || phase === 'world'
   const labelStyle = {
     '--player-label-opacity': visible ? 1 : 0,
@@ -25,12 +31,12 @@ export default function Players({ phase }: { phase: Phase }) {
   return <>{LOOKS.map((look, k) => {
     const phi = -Math.PI / 2 + (k * 2 * Math.PI) / 5, x = Math.cos(phi) * SEAT_R, z = Math.sin(phi) * SEAT_R
     const tableFacing = Math.atan2(-Math.cos(phi), -Math.sin(phi))
-    const player = leaderboard[k]
+    const player = top[k]
     return (
       <group key={k} position={[x, 0, z]} rotation={[0, tableFacing * 0.62, 0]}>
-        <Html position={[0, 2.78, 0]} center pointerEvents="none" zIndexRange={[5, 0]}>
+        {player && <Html position={[0, 2.78, 0]} center pointerEvents="none" zIndexRange={[5, 0]}>
           <div className="player-leader-tag" style={labelStyle}><span>{k + 1}</span><strong>{player.name}</strong><b>{player.total > 0 ? '+' : ''}{player.total}</b></div>
-        </Html>
+        </Html>}
         <RoundedBox args={[0.58, 0.46, 0.1]} radius={0.055} smoothness={4} position={[0, 0.78, -0.55]}><meshStandardMaterial color="#260b10" roughness={0.62} metalness={0.12} /></RoundedBox>
         <RoundedBox args={[0.62, 0.025, 0.11]} radius={0.012} smoothness={3} position={[0, 1.015, -0.55]}><meshStandardMaterial color="#b99a53" metalness={0.72} roughness={0.36} /></RoundedBox>
         <mesh position={[0, 0.5, 0]}><cylinderGeometry args={[0.48, 0.44, 0.1, 24]} /><meshStandardMaterial color="#2a0a10" roughness={0.5} /></mesh>

@@ -1,11 +1,12 @@
-import { useRef, useEffect, MutableRefObject } from 'react'
+import { useRef, useEffect, lazy, Suspense, MutableRefObject } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { RoundedBox, Html, Sparkles } from '@react-three/drei'
-import { EffectComposer, Bloom, Vignette, Noise } from '@react-three/postprocessing'
 import * as THREE from 'three'
 import { SUITS, SuitId } from '../data/club'
 import Players from './Players'
 import Backdrop from './Backdrop'
+// Bloom/vignette/noise load after the scene is already on screen
+const Effects = lazy(() => import('./Effects'))
 import Table from './Table'
 import type { Phase } from '../App'
 
@@ -161,7 +162,7 @@ export default function World(p: WorldProps) {
       <Sparkles count={lowEnd ? 30 : 80} scale={[12, 6, 12]} size={2} speed={0.2} opacity={0.35} position={[0, 2.5, 0]} />
       <Sparkles count={lowEnd ? 16 : 42} scale={[17, 8, 14]} size={1.25} speed={0.13} opacity={0.2} color="#ffd376" position={[0, 3, -2]} />
       <Rig phase={p.phase} pos={p.pos} cameraLift={p.cameraLift} cameraZoom={p.cameraZoom} />
-      {!lowEnd && <EffectComposer><Bloom intensity={0.9} luminanceThreshold={0.3} mipmapBlur /><Vignette darkness={0.8} /><Noise opacity={0.05} /></EffectComposer>}
+      {!lowEnd && <Suspense fallback={null}><Effects /></Suspense>}
     </Canvas>
   )
 }
