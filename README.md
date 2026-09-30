@@ -23,3 +23,9 @@ Reading the sheet through Apps Script has a start-up delay. For much faster load
 4. Copy the link and set `VITE_STANDINGS_CSV_URL` in `.env.local`, then rebuild.
 
 The site tries the CSV first and falls back to the Apps Script endpoint automatically. Published tabs can lag a few minutes, so for 6 minutes after a submission the site reads the script directly.
+
+## Sign-in and admin password
+
+Players sign in with just their name (button top-left). Only names listed in `authConfig.admins` (`src/data/auth.ts`) can open the Score Ledger. With `requirePassword: true` (the default) admins must also type the admin password.
+
+The password is checked by the Apps Script, not the website, and the script also refuses score submissions that don't carry it. To set it: in the Apps Script editor open **Project Settings > Script properties > Add script property**, name `ADMIN_PASSWORD`, value your password, Save. Redeploy the script as a **New version** after pasting the latest `Code.gs`. Change the password by editing the property. After 8 wrong attempts the script blocks password checks for 10 minutes. Admins re-enter the password once per browser session.

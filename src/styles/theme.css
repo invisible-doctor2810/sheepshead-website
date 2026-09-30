@@ -134,3 +134,15 @@ canvas{touch-action:none;cursor:grab}canvas:active{cursor:grabbing}
 .score-table th{color:var(--accent);font-family:var(--serif);position:sticky;top:0;background:#0d1a14;z-index:1}
 .score-table tbody tr:nth-child(even){background:#ffffff07}
 @media(max-width:600px){.score-table-wrap{max-height:calc(100dvh - 15rem)}}
+
+/* Sign-in */
+.auth-bar{position:absolute;z-index:21;top:4.4rem;left:1.5rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;max-width:calc(100vw - 3rem)}
+.auth-bar button,.signin-card button{padding:.4rem .9rem;border:1px solid #d4af3766;background:#090708c9;color:var(--gold,#d4af37);font-family:var(--serif);letter-spacing:.1em;font-size:.85rem;backdrop-filter:blur(5px);transition:box-shadow .3s,transform .2s;cursor:pointer}
+.auth-bar button:hover,.signin-card button:hover{box-shadow:0 0 18px #d4af3766}.auth-bar button:active{transform:scale(.97)}
+.auth-name{color:var(--silver);font-size:.85rem;letter-spacing:.06em}
+.signin-overlay{position:absolute;inset:0;z-index:40;display:grid;place-items:center;background:#000a;backdrop-filter:blur(6px)}
+.signin-card{display:grid;gap:1rem;width:min(92vw,360px);padding:1.6rem;border:1px solid #d4af3766;background:linear-gradient(145deg,#1d1608f8,#0c0904f8);box-shadow:0 0 60px -20px var(--accent,#d4af37)}
+.signin-card h3{margin:0;font-family:var(--serif);color:var(--gold,#d4af37);font-size:1.5rem}
+.signin-card label{display:grid;gap:.4rem;color:var(--silver)}.signin-card input{background:#000;border:0;border-bottom:1px solid var(--accent,#d4af37);padding:.5rem;color:inherit;font-size:1rem}
+.signin-card div{display:flex;gap:.6rem}
+@media(max-width:600px){.auth-bar{top:3.6rem;left:.65rem}.auth-bar button{font-size:.75rem}}

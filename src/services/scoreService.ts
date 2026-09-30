@@ -4,7 +4,13 @@ export interface SubmitResult { ok: true }
 const endpoint = (import.meta as ImportMeta & { env: Record<string, string | undefined> }).env.VITE_SCORE_SHEETS_ENDPOINT
 interface SubmissionStatus { ok?: boolean; pending?: boolean; error?: string }
 
-export function submitScore(submission: ScoreSubmission): Promise<SubmitResult> {
+let adminPassword = ''
+/** Set after a successful admin sign-in; sent with every score submission for the server to check. */
+export function setAdminPassword(p: string) { adminPassword = p }
+export const submitScore = (submission: ScoreSubmission) => postToSheet({ ...submission, adminPassword })
+export const verifyAdminPassword = (password: string) => postToSheet({ action: 'verify', adminPassword: password })
+
+function postToSheet(submission: Record<string, unknown>): Promise<SubmitResult> {
   if (!endpoint) return Promise.reject(new Error('Score submission is not connected yet. Configure the Google Sheets endpoint.'))
 
   return new Promise((resolve, reject) => {

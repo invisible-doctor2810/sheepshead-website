@@ -8,6 +8,24 @@ const NAME_HEADER = 'Name (first and last)';
 const EMAIL_HEADER = "Email (If you're not on the email list already)";
 const STATUS_PREFIX = 'score-submission:';
 
+// Admin password lives in Project Settings > Script properties as ADMIN_PASSWORD (never in this file or the website).
+// Once set, every score submission must carry it. Leave it unset to keep the ledger open.
+function checkAdminPassword(supplied) {
+  const expected = PropertiesService.getScriptProperties().getProperty('ADMIN_PASSWORD');
+  if (!expected) return;
+  const cache = CacheService.getScriptCache();
+  const fails = Number(cache.get('pw_fail') || 0);
+  if (fails >= 8) throw new Error('Too many wrong passwords. Try again in 10 minutes.');
+  const given = String(supplied == null ? '' : supplied);
+  let diff = given.length ^ expected.length;
+  for (let i = 0; i < Math.max(given.length, expected.length); i++) diff |= (given.charCodeAt(i) || 0) ^ (expected.charCodeAt(i) || 0);
+  if (diff !== 0) {
+    cache.put('pw_fail', String(fails + 1), 600);
+    throw new Error('Incorrect password.');
+  }
+  cache.remove('pw_fail');
+}
+
 function doPost(e) {
   const cache = CacheService.getScriptCache();
   let requestId = '';
@@ -18,6 +36,13 @@ function doPost(e) {
 
     const cached = cache.get(STATUS_PREFIX + requestId);
     if (cached) return postResponse();
+
+    checkAdminPassword(payload.adminPassword);
+    if (payload.action === 'verify') {
+      if (!PropertiesService.getScriptProperties().getProperty('ADMIN_PASSWORD')) throw new Error('No admin password is set on the server yet.');
+      cache.put(STATUS_PREFIX + requestId, JSON.stringify({ ok: true }), 600);
+      return postResponse();
+    }
 
     const name = cleanText(payload.name, 120);
     const email = cleanText(payload.email, 254);
